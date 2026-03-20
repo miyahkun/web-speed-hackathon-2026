@@ -1,4 +1,4 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 
 export function useSearchParams(): [URLSearchParams] {
   const search = useSyncExternalStore(
