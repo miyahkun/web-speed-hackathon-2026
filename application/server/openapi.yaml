@@ -671,6 +671,13 @@ paths:
         - Crok
       summary: チャット候補取得
       operationId: getCrokSuggestions
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 検索クエリ。指定するとサーバー側で形態素解析+BM25によるフィルタリングを行い上位10件を返す。未指定時は全候補を返す。
       responses:
         "200":
           description: OK
@@ -685,6 +692,44 @@ paths:
                     type: array
                     items:
                       type: string
+                  queryTokens:
+                    type: array
+                    items:
+                      type: string
+                    description: 形態素解析で抽出された内容語トークン（qパラメータ指定時のみ）
+  /crok/sentiment:
+    get:
+      tags:
+        - Crok
+      summary: テキスト感情分析
+      operationId: analyzeSentiment
+      parameters:
+        - name: text
+          in: query
+          required: true
+          schema:
+            type: string
+          description: 感情分析対象のテキスト
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - score
+                  - label
+                properties:
+                  score:
+                    type: number
+                    description: 感情スコア（正=ポジティブ、負=ネガティブ）
+                  label:
+                    type: string
+                    enum:
+                      - positive
+                      - negative
+                      - neutral
   /crok:
     get:
       tags:
