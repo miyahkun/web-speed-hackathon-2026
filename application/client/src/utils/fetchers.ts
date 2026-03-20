@@ -10,9 +10,9 @@ export async function fetchJSON<T>(url: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export async function sendFile<T>(url: string, file: File): Promise<T> {
+export async function sendFile<T>(url: string, file: File | Blob, method: string = "POST"): Promise<T> {
   const res = await fetch(url, {
-    method: "POST",
+    method,
     headers: { "Content-Type": "application/octet-stream" },
     body: file,
   });

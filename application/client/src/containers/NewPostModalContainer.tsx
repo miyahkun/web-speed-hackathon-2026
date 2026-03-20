@@ -13,12 +13,21 @@ interface SubmitParams {
 }
 
 async function sendNewPost({ images, movie, sound, text }: SubmitParams): Promise<Models.Post> {
+  let soundMeta: { artist?: string; id: string; title?: string } | undefined;
+  if (sound) {
+    // WAVヘッダー（16KB）だけ送ってメタデータを高速に取得
+    const header = sound.slice(0, 16 * 1024);
+    soundMeta = await sendFile<{ artist?: string; id: string; title?: string }>("/api/v1/sounds", header);
+    // フルファイルはバックグラウンドでアップロード（投稿フローをブロックしない）
+    sendFile(`/api/v1/sounds/${soundMeta.id}/data`, sound, "PUT").catch(() => {});
+  }
+
   const payload = {
     images: images
       ? await Promise.all(images.map((image) => sendFile("/api/v1/images", image)))
       : [],
     movie: movie ? await sendFile("/api/v1/movies", movie) : undefined,
-    sound: sound ? await sendFile("/api/v1/sounds", sound) : undefined,
+    sound: soundMeta,
     text,
   };
 
