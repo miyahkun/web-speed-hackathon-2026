@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AspectRatioBox } from "@web-speed-hackathon-2026/client/src/components/foundation/AspectRatioBox";
 import { FontAwesomeIcon } from "@web-speed-hackathon-2026/client/src/components/foundation/FontAwesomeIcon";
@@ -16,8 +16,30 @@ interface Props {
 export const PausableMovie = ({ src, priority = false }: Props) => {
   const [inViewRef, inView] = useInView();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number>(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+
+  const drawFrame = useCallback(() => {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    if (!video || !canvas) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+    }
+
+    ctx.drawImage(video, 0, 0);
+
+    if (!video.paused && !video.ended) {
+      rafRef.current = requestAnimationFrame(drawFrame);
+    }
+  }, []);
 
   const handleClick = useCallback(() => {
     const video = videoRef.current;
@@ -32,10 +54,17 @@ export const PausableMovie = ({ src, priority = false }: Props) => {
     }
   }, []);
 
+  const handlePlay = useCallback(() => {
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(drawFrame);
+  }, [drawFrame]);
+
   const handleLoadedData = useCallback(() => {
     setIsLoaded(true);
     const video = videoRef.current;
     if (!video) return;
+
+    drawFrame();
 
     // 視覚効果 off のとき自動再生しない
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -45,6 +74,10 @@ export const PausableMovie = ({ src, priority = false }: Props) => {
       video.play();
       setIsPlaying(true);
     }
+  }, [drawFrame]);
+
+  useEffect(() => {
+    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
   const shouldRender = priority || inView;
@@ -69,14 +102,16 @@ export const PausableMovie = ({ src, priority = false }: Props) => {
       >
         <video
           ref={videoRef}
-          className="h-full w-full object-cover"
+          className="hidden"
           src={src}
           loop
           muted
           playsInline
           preload={priority ? "auto" : "metadata"}
           onLoadedData={handleLoadedData}
+          onPlay={handlePlay}
         />
+        <canvas ref={canvasRef} className="h-full w-full object-cover" />
         {!isLoaded && <div className="bg-cax-surface-subtle absolute inset-0" />}
         <div
           className={classNames(
