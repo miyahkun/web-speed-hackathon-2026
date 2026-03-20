@@ -1,4 +1,5 @@
 import bodyParser from "body-parser";
+import shrinkRay from "shrink-ray-current";
 import Express from "express";
 
 import { apiRouter } from "@web-speed-hackathon-2026/server/src/routes/api";
@@ -8,6 +9,7 @@ import { sessionMiddleware } from "@web-speed-hackathon-2026/server/src/session"
 export const app = Express();
 
 app.set("trust proxy", true);
+app.use(shrinkRay());
 
 // リクエスト応答時間ログ (PERF_LOG=1 で有効, PERF_LOG=verbose で全リクエスト出力)
 const PERF_LOG = process.env["PERF_LOG"] ?? "";
