@@ -7,12 +7,13 @@ import { useInView } from "@web-speed-hackathon-2026/client/src/hooks/use_in_vie
 
 interface Props {
   src: string;
+  priority?: boolean;
 }
 
 /**
  * クリックすると再生・一時停止を切り替えます。
  */
-export const PausableMovie = ({ src }: Props) => {
+export const PausableMovie = ({ src, priority = false }: Props) => {
   const [inViewRef, inView] = useInView();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,7 +47,9 @@ export const PausableMovie = ({ src }: Props) => {
     }
   }, []);
 
-  if (!inView) {
+  const shouldRender = priority || inView;
+
+  if (!shouldRender) {
     return (
       <div ref={inViewRef}>
         <AspectRatioBox aspectHeight={1} aspectWidth={1}>
@@ -71,7 +74,7 @@ export const PausableMovie = ({ src }: Props) => {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload={priority ? "auto" : "metadata"}
           onLoadedData={handleLoadedData}
         />
         {!isLoaded && <div className="bg-cax-surface-subtle absolute inset-0" />}
