@@ -5,7 +5,7 @@ export function getImagePath(imageId: string): string {
 }
 
 export function getMoviePath(movieId: string): string {
-  return `/movies/${movieId}.gif?${CACHE_BUSTER}`;
+  return `/movies/${movieId}.mp4?${CACHE_BUSTER}`;
 }
 
 export function getSoundPath(soundId: string): string {

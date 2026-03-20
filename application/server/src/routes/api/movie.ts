@@ -1,15 +1,26 @@
+import { execFile } from "child_process";
 import { promises as fs } from "fs";
+import os from "os";
 import path from "path";
+import { promisify } from "util";
 
 import { Router } from "express";
-import { fileTypeFromBuffer } from "file-type";
 import httpErrors from "http-errors";
 import { v4 as uuidv4 } from "uuid";
 
 import { UPLOAD_PATH } from "@web-speed-hackathon-2026/server/src/paths";
 
-// 変換した動画の拡張子
-const EXTENSION = "gif";
+const execFileAsync = promisify(execFile);
+
+const ALLOWED_MIMETYPES = new Set([
+  "video/mp4",
+  "video/webm",
+  "video/x-matroska",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/mpeg",
+  "image/gif",
+]);
 
 export const movieRouter = Router();
 
@@ -21,16 +32,33 @@ movieRouter.post("/movies", async (req, res) => {
     throw new httpErrors.BadRequest();
   }
 
-  const type = await fileTypeFromBuffer(req.body);
-  if (type === undefined || type.ext !== EXTENSION) {
-    throw new httpErrors.BadRequest("Invalid file type");
-  }
-
+  // 一時ファイルに書き出してffmpegで変換
+  const tmpInput = path.join(os.tmpdir(), `${uuidv4()}_input`);
   const movieId = uuidv4();
+  const outputPath = path.resolve(UPLOAD_PATH, `./movies/${movieId}.mp4`);
 
-  const filePath = path.resolve(UPLOAD_PATH, `./movies/${movieId}.${EXTENSION}`);
-  await fs.mkdir(path.resolve(UPLOAD_PATH, "movies"), { recursive: true });
-  await fs.writeFile(filePath, req.body);
+  try {
+    await fs.mkdir(path.resolve(UPLOAD_PATH, "movies"), { recursive: true });
+    await fs.writeFile(tmpInput, req.body);
+
+    // 先頭5秒、正方形クロップ、10fps、無音、H.264 MP4に変換
+    await execFileAsync("ffmpeg", [
+      "-i", tmpInput,
+      "-t", "5",
+      "-r", "10",
+      "-vf", "crop='min(iw,ih)':'min(iw,ih)',scale=320:320",
+      "-an",
+      "-c:v", "libx264",
+      "-preset", "fast",
+      "-crf", "28",
+      "-pix_fmt", "yuv420p",
+      "-movflags", "+faststart",
+      "-y",
+      outputPath,
+    ]);
+  } finally {
+    await fs.unlink(tmpInput).catch(() => {});
+  }
 
   return res.status(200).type("application/json").send({ id: movieId });
 });

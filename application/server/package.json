@@ -11,7 +11,8 @@
     "typecheck": "tsc --noEmit",
     "seed:generate": "tsx ./scripts/generateSeeds.ts",
     "seed:insert": "tsx ./scripts/insertSeeds.ts",
-    "optimize:images": "tsx ./scripts/optimizeImages.ts"
+    "optimize:images": "tsx ./scripts/optimizeImages.ts",
+    "convert:movies": "tsx ./scripts/convertMoviesToMp4.ts"
   },
   "dependencies": {
     "@tsconfig/strictest": "2.0.8",

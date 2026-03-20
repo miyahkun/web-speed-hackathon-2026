@@ -5,6 +5,8 @@ ARG PNPM_VERSION=10.32.1
 
 FROM node:${NODE_VERSION}-slim AS base
 
+RUN apt-get update -qq && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
 LABEL fly_launch_runtime="Node.js"
 
 ENV PNPM_HOME=/pnpm
