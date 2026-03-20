@@ -45,8 +45,13 @@ export const SoundPlayer = ({ sound }: Props) => {
   const isReady = inView && !isLoading && data !== null && blobUrl !== null;
 
   return (
-    <div ref={inViewRef} className="bg-cax-surface-subtle flex h-full w-full items-center justify-center">
-      {isReady && <audio ref={audioRef} loop={true} onTimeUpdate={handleTimeUpdate} src={blobUrl} />}
+    <div
+      ref={inViewRef}
+      className="bg-cax-surface-subtle flex h-full w-full items-center justify-center"
+    >
+      {isReady && (
+        <audio ref={audioRef} loop={true} onTimeUpdate={handleTimeUpdate} src={blobUrl} />
+      )}
       <div className="p-2">
         <button
           className="bg-cax-accent text-cax-surface-raised flex h-8 w-8 items-center justify-center rounded-full text-sm hover:opacity-75"

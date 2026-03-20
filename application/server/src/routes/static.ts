@@ -1,9 +1,9 @@
 import { promises as fs } from "fs";
+import type { ServerResponse } from "http";
+import path from "path";
 
 import history from "connect-history-api-fallback";
 import { Router } from "express";
-import type { ServerResponse } from "http";
-import path from "path";
 import serveStatic from "serve-static";
 
 import {
@@ -13,10 +13,26 @@ import {
 } from "@web-speed-hackathon-2026/server/src/paths";
 
 const LONG_CACHE_EXTS = new Set([
-  ".jpg", ".jpeg", ".png", ".webp", ".avif", ".gif", ".svg", ".ico",
-  ".mp4", ".webm", ".mp3", ".wav", ".ogg",
-  ".woff", ".woff2", ".ttf", ".eot",
-  ".wasm", ".dat", ".bin",
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".avif",
+  ".gif",
+  ".svg",
+  ".ico",
+  ".mp4",
+  ".webm",
+  ".mp3",
+  ".wav",
+  ".ogg",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".eot",
+  ".wasm",
+  ".dat",
+  ".bin",
 ]);
 
 function setCacheHeaders(res: ServerResponse, filePath: string) {

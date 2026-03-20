@@ -16,7 +16,7 @@ async function calculate(data: ArrayBuffer): Promise<ParsedData> {
   const len = left.length;
   const chunkSize = Math.ceil(len / PEAK_COUNT);
 
-  const peaks = new Array<number>(PEAK_COUNT);
+  const peaks = Array.from<number>({ length: PEAK_COUNT });
   let max = 0;
 
   for (let i = 0; i < PEAK_COUNT; i++) {

@@ -1,6 +1,6 @@
 import bodyParser from "body-parser";
-import shrinkRay from "shrink-ray-current";
 import Express from "express";
+import shrinkRay from "shrink-ray-current";
 
 import { apiRouter } from "@web-speed-hackathon-2026/server/src/routes/api";
 import { staticRouter } from "@web-speed-hackathon-2026/server/src/routes/static";
@@ -23,16 +23,18 @@ if (PERF_LOG) {
       const isSlow = duration > 100;
 
       if (isVerbose || isApi || isSlow) {
-        console.log(JSON.stringify({
-          type: "request",
-          method: req.method,
-          path: req.path,
-          status: res.statusCode,
-          duration: Math.round(duration),
-          size: Number(res.getHeader("content-length")) || null,
-          ip: req.ip ?? null,
-          ua: req.get("user-agent") ?? null,
-        }));
+        console.log(
+          JSON.stringify({
+            type: "request",
+            method: req.method,
+            path: req.path,
+            status: res.statusCode,
+            duration: Math.round(duration),
+            size: Number(res.getHeader("content-length")) || null,
+            ip: req.ip ?? null,
+            ua: req.get("user-agent") ?? null,
+          }),
+        );
       }
     });
     next();
@@ -43,11 +45,15 @@ app.use(sessionMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.raw({ limit: "20mb" }));
 
-app.use("/api/v1", (_req, res, next) => {
-  res.header({
-    "Cache-Control": "max-age=0, no-transform",
-    Connection: "close",
-  });
-  return next();
-}, apiRouter);
+app.use(
+  "/api/v1",
+  (_req, res, next) => {
+    res.header({
+      "Cache-Control": "max-age=0, no-transform",
+      Connection: "close",
+    });
+    return next();
+  },
+  apiRouter,
+);
 app.use(staticRouter);

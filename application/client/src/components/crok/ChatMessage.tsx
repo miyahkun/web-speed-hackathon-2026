@@ -73,9 +73,7 @@ const AssistantMessage = ({ content }: { content: string }) => {
     });
 
     // 末尾ブロックは常に再レンダリング
-    const tailElement = tail ? (
-      <MemoizedBlock content={tail} key={`tail-${tail.length}`} />
-    ) : null;
+    const tailElement = tail ? <MemoizedBlock content={tail} key={`tail-${tail.length}`} /> : null;
 
     return [...stableElements, tailElement];
   }, [content]);

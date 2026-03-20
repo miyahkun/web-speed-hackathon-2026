@@ -26,7 +26,9 @@ async function optimizePostImages() {
 
       fs.writeFileSync(filePath, buffer);
       const newSize = Math.round(buffer.length / 1024);
-      console.log(`  ${file}: ${meta.width}x${meta.height} -> ${POST_IMAGE_MAX_WIDTH}px wide (${newSize}KB)`);
+      console.log(
+        `  ${file}: ${meta.width}x${meta.height} -> ${POST_IMAGE_MAX_WIDTH}px wide (${newSize}KB)`,
+      );
     } else {
       console.log(`  ${file}: ${meta.width}x${meta.height} (skip, already small enough)`);
     }
@@ -51,7 +53,9 @@ async function optimizeProfileImages() {
 
       fs.writeFileSync(filePath, buffer);
       const newSize = Math.round(buffer.length / 1024);
-      console.log(`  ${file}: ${meta.width}x${meta.height} -> ${PROFILE_IMAGE_SIZE}x${PROFILE_IMAGE_SIZE} (${newSize}KB)`);
+      console.log(
+        `  ${file}: ${meta.width}x${meta.height} -> ${PROFILE_IMAGE_SIZE}x${PROFILE_IMAGE_SIZE} (${newSize}KB)`,
+      );
     } else {
       console.log(`  ${file}: ${meta.width}x${meta.height} (skip, already small enough)`);
     }

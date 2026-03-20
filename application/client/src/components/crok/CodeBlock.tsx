@@ -1,11 +1,11 @@
 import { ComponentProps, isValidElement, ReactElement, ReactNode } from "react";
-import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/light";
 import bash from "react-syntax-highlighter/dist/esm/languages/hljs/bash";
 import json from "react-syntax-highlighter/dist/esm/languages/hljs/json";
 import python from "react-syntax-highlighter/dist/esm/languages/hljs/python";
 import rust from "react-syntax-highlighter/dist/esm/languages/hljs/rust";
 import sql from "react-syntax-highlighter/dist/esm/languages/hljs/sql";
 import typescript from "react-syntax-highlighter/dist/esm/languages/hljs/typescript";
+import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/light";
 import { atomOneLight } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 SyntaxHighlighter.registerLanguage("bash", bash);

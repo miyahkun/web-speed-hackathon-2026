@@ -12,26 +12,30 @@ export function createTimer(label: string, req?: Request) {
     step(name: string) {
       if (!enabled) return;
       const now = performance.now();
-      console.log(JSON.stringify({
-        type: "perf",
-        label,
-        step: name,
-        duration: Math.round(now - last),
-        ip,
-        ua,
-      }));
+      console.log(
+        JSON.stringify({
+          type: "perf",
+          label,
+          step: name,
+          duration: Math.round(now - last),
+          ip,
+          ua,
+        }),
+      );
       last = now;
     },
     end() {
       if (!enabled) return;
-      console.log(JSON.stringify({
-        type: "perf",
-        label,
-        step: "total",
-        duration: Math.round(performance.now() - start),
-        ip,
-        ua,
-      }));
+      console.log(
+        JSON.stringify({
+          type: "perf",
+          label,
+          step: "total",
+          duration: Math.round(performance.now() - start),
+          ip,
+          ua,
+        }),
+      );
     },
   };
 }

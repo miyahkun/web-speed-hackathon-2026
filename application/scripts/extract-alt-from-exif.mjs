@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+
 import sharp from "sharp";
 
 /**
@@ -16,15 +17,11 @@ function readImageDescription(exifBuf) {
   const isBigEndian = exifBuf[tiffOffset] === 0x4d; // 'M'
 
   function readUint16(offset) {
-    return isBigEndian
-      ? exifBuf.readUInt16BE(offset)
-      : exifBuf.readUInt16LE(offset);
+    return isBigEndian ? exifBuf.readUInt16BE(offset) : exifBuf.readUInt16LE(offset);
   }
 
   function readUint32(offset) {
-    return isBigEndian
-      ? exifBuf.readUInt32BE(offset)
-      : exifBuf.readUInt32LE(offset);
+    return isBigEndian ? exifBuf.readUInt32BE(offset) : exifBuf.readUInt32LE(offset);
   }
 
   // IFD0 offset
@@ -37,7 +34,7 @@ function readImageDescription(exifBuf) {
 
     if (tag === 0x010e) {
       // ImageDescription
-      const type = readUint16(entryOffset + 2);
+      const _type = readUint16(entryOffset + 2);
       const count = readUint32(entryOffset + 4);
 
       let valueOffset;
@@ -71,7 +68,9 @@ async function extractAlt(gitRef, imagePath) {
   } catch (e) {
     console.error(`Failed to process ${imagePath}: ${e.message}`);
   } finally {
-    try { execSync(`rm -f "${tmpFile}"`); } catch {}
+    try {
+      execSync(`rm -f "${tmpFile}"`);
+    } catch {}
   }
   return "";
 }

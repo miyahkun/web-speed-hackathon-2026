@@ -42,16 +42,22 @@ soundRouter.post("/sounds", async (req, res) => {
 
   // バックグラウンドで MP3 に変換し、完了したら元ファイルを削除
   execFileAsync("ffmpeg", [
-    "-i", origPath,
+    "-i",
+    origPath,
     "-vn",
-    "-c:a", "libmp3lame",
-    "-b:a", "128k",
-    "-compression_level", "0",
+    "-c:a",
+    "libmp3lame",
+    "-b:a",
+    "128k",
+    "-compression_level",
+    "0",
     "-y",
     mp3Path,
-  ]).then(() => {
-    fs.unlink(origPath).catch(() => {});
-  }).catch(() => {});
+  ])
+    .then(() => {
+      fs.unlink(origPath).catch(() => {});
+    })
+    .catch(() => {});
   // 変換完了を待たずにレスポンスを返す
   return res.status(200).type("application/json").send({ artist, id: soundId, title });
 });

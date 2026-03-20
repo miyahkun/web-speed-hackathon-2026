@@ -90,8 +90,7 @@ const config = {
   ],
   resolve: {
     extensions: [".tsx", ".ts", ".mjs", ".cjs", ".jsx", ".js"],
-    alias: {
-    },
+    alias: {},
     fallback: {
       fs: false,
       path: false,

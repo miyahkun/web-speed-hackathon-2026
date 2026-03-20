@@ -6,37 +6,59 @@ import { AppPage } from "@web-speed-hackathon-2026/client/src/components/applica
 import { fetchJSON, sendJSON } from "@web-speed-hackathon-2026/client/src/utils/fetchers";
 
 const TimelineContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/TimelineContainer").then((m) => ({ default: m.TimelineContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/TimelineContainer").then((m) => ({
+    default: m.TimelineContainer,
+  })),
 );
 const DirectMessageListContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/DirectMessageListContainer").then((m) => ({ default: m.DirectMessageListContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/DirectMessageListContainer").then(
+    (m) => ({ default: m.DirectMessageListContainer }),
+  ),
 );
 const DirectMessageContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/DirectMessageContainer").then((m) => ({ default: m.DirectMessageContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/DirectMessageContainer").then((m) => ({
+    default: m.DirectMessageContainer,
+  })),
 );
 const SearchContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/SearchContainer").then((m) => ({ default: m.SearchContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/SearchContainer").then((m) => ({
+    default: m.SearchContainer,
+  })),
 );
 const UserProfileContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/UserProfileContainer").then((m) => ({ default: m.UserProfileContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/UserProfileContainer").then((m) => ({
+    default: m.UserProfileContainer,
+  })),
 );
 const PostContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/PostContainer").then((m) => ({ default: m.PostContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/PostContainer").then((m) => ({
+    default: m.PostContainer,
+  })),
 );
 const TermContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/TermContainer").then((m) => ({ default: m.TermContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/TermContainer").then((m) => ({
+    default: m.TermContainer,
+  })),
 );
 const CrokContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/CrokContainer").then((m) => ({ default: m.CrokContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/CrokContainer").then((m) => ({
+    default: m.CrokContainer,
+  })),
 );
 const NotFoundContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/NotFoundContainer").then((m) => ({ default: m.NotFoundContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/NotFoundContainer").then((m) => ({
+    default: m.NotFoundContainer,
+  })),
 );
 const AuthModalContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/AuthModalContainer").then((m) => ({ default: m.AuthModalContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/AuthModalContainer").then((m) => ({
+    default: m.AuthModalContainer,
+  })),
 );
 const NewPostModalContainer = lazy(() =>
-  import("@web-speed-hackathon-2026/client/src/containers/NewPostModalContainer").then((m) => ({ default: m.NewPostModalContainer })),
+  import("@web-speed-hackathon-2026/client/src/containers/NewPostModalContainer").then((m) => ({
+    default: m.NewPostModalContainer,
+  })),
 );
 
 export const AppContainer = () => {

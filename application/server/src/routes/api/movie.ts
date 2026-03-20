@@ -12,16 +12,6 @@ import { UPLOAD_PATH } from "@web-speed-hackathon-2026/server/src/paths";
 
 const execFileAsync = promisify(execFile);
 
-const ALLOWED_MIMETYPES = new Set([
-  "video/mp4",
-  "video/webm",
-  "video/x-matroska",
-  "video/quicktime",
-  "video/x-msvideo",
-  "video/mpeg",
-  "image/gif",
-]);
-
 export const movieRouter = Router();
 
 movieRouter.post("/movies", async (req, res) => {
@@ -43,16 +33,25 @@ movieRouter.post("/movies", async (req, res) => {
 
     // 先頭5秒、正方形クロップ、10fps、無音、H.264 MP4に変換
     await execFileAsync("ffmpeg", [
-      "-i", tmpInput,
-      "-t", "5",
-      "-r", "10",
-      "-vf", "crop='min(iw,ih)':'min(iw,ih)',scale=320:320",
+      "-i",
+      tmpInput,
+      "-t",
+      "5",
+      "-r",
+      "10",
+      "-vf",
+      "crop='min(iw,ih)':'min(iw,ih)',scale=320:320",
       "-an",
-      "-c:v", "libx264",
-      "-preset", "ultrafast",
-      "-crf", "28",
-      "-pix_fmt", "yuv420p",
-      "-movflags", "+faststart",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "ultrafast",
+      "-crf",
+      "28",
+      "-pix_fmt",
+      "yuv420p",
+      "-movflags",
+      "+faststart",
       "-y",
       outputPath,
     ]);
