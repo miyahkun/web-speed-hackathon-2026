@@ -5,9 +5,10 @@ import { getProfileImagePath } from "@web-speed-hackathon-2026/client/src/utils/
 
 interface Props {
   comment: Models.Comment;
+  priority?: boolean;
 }
 
-export const CommentItem = ({ comment }: Props) => {
+export const CommentItem = ({ comment, priority = false }: Props) => {
   return (
     <article className="hover:bg-cax-surface-subtle px-1 sm:px-4">
       <div className="border-cax-border flex border-b px-2 pt-2 pb-4 sm:px-4">
@@ -18,7 +19,8 @@ export const CommentItem = ({ comment }: Props) => {
           >
             <img
               alt={comment.user.profileImage.alt}
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              {...(priority ? { fetchPriority: "high" as const } : {})}
               src={getProfileImagePath(comment.user.profileImage.id)}
             />
           </Link>
