@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { startTransition, useCallback, useMemo, useState } from "react";
 import { Helmet } from "react-helmet";
 
 import { CrokGate } from "@web-speed-hackathon-2026/client/src/components/crok/CrokGate";
@@ -62,7 +62,9 @@ export const CrokContainer = ({ activeUser, authModalId }: Props) => {
         content: "",
       };
 
-      setMessages((prev) => [...prev, userMessage, assistantMessage]);
+      startTransition(() => {
+        setMessages((prev) => [...prev, userMessage, assistantMessage]);
+      });
 
       const encodedPrompt = encodeURIComponent(userInput);
       start(`/api/v1/crok?prompt=${encodedPrompt}`);
