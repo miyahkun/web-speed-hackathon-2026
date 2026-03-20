@@ -55,8 +55,8 @@ export const NewPostModalPage = ({ id, hasError, isLoading, onResetError, onSubm
 
       Promise.all(
         files.map((file) =>
-          convertImage(file, { extension: MagickFormat.Jpg }).then(
-            (blob) => new File([blob], "converted.jpg", { type: "image/jpeg" }),
+          convertImage(file, { extension: MagickFormat.WebP }).then(
+            (blob) => new File([blob], "converted.webp", { type: "image/webp" }),
           ),
         ),
       )
@@ -103,13 +103,13 @@ export const NewPostModalPage = ({ id, hasError, isLoading, onResetError, onSubm
     if (isValid) {
       setIsConverting(true);
 
-      convertMovie(file, { extension: "gif", size: undefined })
+      convertMovie(file, { extension: "webm", size: undefined })
         .then((converted) => {
           setParams((params) => ({
             ...params,
             images: [],
-            movie: new File([converted], "converted.gif", {
-              type: "image/gif",
+            movie: new File([converted], "converted.webm", {
+              type: "video/webm",
             }),
             sound: undefined,
           }));
