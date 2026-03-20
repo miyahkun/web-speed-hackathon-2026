@@ -23,7 +23,7 @@ export const CoveredImage = ({ src, alt, priority = false }: Props) => {
     <div className="relative h-full w-full overflow-hidden">
       <img
         alt={alt}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="h-full w-full object-cover"
         loading={priority ? "eager" : "lazy"}
         {...(priority ? { fetchPriority: "high" } : {})}
         src={src}
