@@ -1,9 +1,3 @@
-import { CreateMLCEngine } from "@mlc-ai/web-llm";
-import { stripIndents } from "common-tags";
-import * as JSONRepairJS from "json-repair-js";
-import langs from "langs";
-import invariant from "tiny-invariant";
-
 interface Translator {
   translate(text: string): Promise<string>;
   [Symbol.dispose](): void;
@@ -15,6 +9,21 @@ interface Params {
 }
 
 export async function createTranslator(params: Params): Promise<Translator> {
+  if (!("gpu" in navigator)) {
+    throw new Error("WebGPU is not supported in this browser");
+  }
+
+  const [{ CreateMLCEngine }, { stripIndents }, JSONRepairJS, langsModule, { default: invariant }] =
+    await Promise.all([
+      import("@mlc-ai/web-llm"),
+      import("common-tags"),
+      import("json-repair-js"),
+      import("langs"),
+      import("tiny-invariant"),
+    ]);
+
+  const langs = langsModule.default;
+
   const sourceLang = langs.where("1", params.sourceLanguage);
   invariant(sourceLang, `Unsupported source language code: ${params.sourceLanguage}`);
 
