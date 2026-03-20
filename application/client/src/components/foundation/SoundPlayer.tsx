@@ -8,6 +8,8 @@ import { useInView } from "@web-speed-hackathon-2026/client/src/hooks/use_in_vie
 import { fetchBinary } from "@web-speed-hackathon-2026/client/src/utils/fetchers";
 import { getSoundPath } from "@web-speed-hackathon-2026/client/src/utils/get_path";
 
+const nullFetcher = async () => null;
+
 interface Props {
   sound: Models.Sound;
 }
@@ -15,7 +17,7 @@ interface Props {
 export const SoundPlayer = ({ sound }: Props) => {
   const [inViewRef, inView] = useInView();
   const soundPath = getSoundPath(sound.id);
-  const { data, isLoading } = useFetch(inView ? soundPath : "", inView ? fetchBinary : async () => null);
+  const { data, isLoading } = useFetch(inView ? soundPath : "", inView ? fetchBinary : nullFetcher);
 
   const blobUrl = useMemo(() => {
     return data !== null ? URL.createObjectURL(new Blob([data])) : null;
