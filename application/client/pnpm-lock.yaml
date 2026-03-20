@@ -7,16 +7,25 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@web-speed-hackathon-2026/client':
+        specifier: workspace:*
+        version: 'link:'
     devDependencies:
-      '@types/doublearray':
-        specifier: 0.0.32
-        version: 0.0.32
       copy-webpack-plugin:
         specifier: 13.0.1
         version: 13.0.1(webpack@5.102.1)
       webpack:
         specifier: 5.102.1
         version: 5.102.1
+
+  ..: {}
+
+  ../../scoring-tool: {}
+
+  ../e2e: {}
+
+  ../server: {}
 
 packages:
 
@@ -35,9 +44,6 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
-
-  '@types/doublearray@0.0.32':
-    resolution: {integrity: sha512-HloTru3I3a55runIVqZX1YBQi2L5A4peNQPh33yshzB4ttt1qHCnHPkuhy9Djy/cTx7i5xJvxItKRPCmvnfpGw==}
 
   '@types/eslint-scope@3.7.7':
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
@@ -377,8 +383,6 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
-
-  '@types/doublearray@0.0.32': {}
 
   '@types/eslint-scope@3.7.7':
     dependencies:
