@@ -1,6 +1,6 @@
 import bodyParser from "body-parser";
+import compression from "compression";
 import Express from "express";
-import shrinkRay from "shrink-ray-current";
 
 import { apiRouter } from "@web-speed-hackathon-2026/server/src/routes/api";
 import { staticRouter } from "@web-speed-hackathon-2026/server/src/routes/static";
@@ -9,7 +9,7 @@ import { sessionMiddleware } from "@web-speed-hackathon-2026/server/src/session"
 export const app = Express();
 
 app.set("trust proxy", true);
-app.use(shrinkRay());
+app.use(compression());
 
 // リクエスト応答時間ログ (PERF_LOG=1 で有効, PERF_LOG=verbose で全リクエスト出力)
 const PERF_LOG = process.env["PERF_LOG"] ?? "";
