@@ -1,4 +1,4 @@
-const CACHE_BUSTER = "v=2";
+const CACHE_BUSTER = "v=3";
 
 export function getImagePath(imageId: string): string {
   return `/images/${imageId}.webp?${CACHE_BUSTER}`;
