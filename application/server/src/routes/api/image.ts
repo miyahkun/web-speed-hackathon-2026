@@ -9,7 +9,7 @@ import { v4 as uuidv4 } from "uuid";
 import { UPLOAD_PATH } from "@web-speed-hackathon-2026/server/src/paths";
 
 // 変換した画像の拡張子
-const EXTENSION = "webp";
+const EXTENSION = "jpg";
 
 export const imageRouter = Router();
 

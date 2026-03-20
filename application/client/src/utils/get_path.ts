@@ -1,9 +1,9 @@
 export function getImagePath(imageId: string): string {
-  return `/images/${imageId}.webp`;
+  return `/images/${imageId}.jpg`;
 }
 
 export function getMoviePath(movieId: string): string {
-  return `/movies/${movieId}.webm`;
+  return `/movies/${movieId}.gif`;
 }
 
 export function getSoundPath(soundId: string): string {
@@ -11,5 +11,5 @@ export function getSoundPath(soundId: string): string {
 }
 
 export function getProfileImagePath(profileImageId: string): string {
-  return `/images/profiles/${profileImageId}.webp`;
+  return `/images/profiles/${profileImageId}.jpg`;
 }
