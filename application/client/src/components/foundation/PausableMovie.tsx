@@ -6,6 +6,7 @@ import { RefCallback, useCallback, useRef, useState } from "react";
 import { AspectRatioBox } from "@web-speed-hackathon-2026/client/src/components/foundation/AspectRatioBox";
 import { FontAwesomeIcon } from "@web-speed-hackathon-2026/client/src/components/foundation/FontAwesomeIcon";
 import { useFetch } from "@web-speed-hackathon-2026/client/src/hooks/use_fetch";
+import { useInView } from "@web-speed-hackathon-2026/client/src/hooks/use_in_view";
 import { fetchBinary } from "@web-speed-hackathon-2026/client/src/utils/fetchers";
 
 interface Props {
@@ -16,7 +17,8 @@ interface Props {
  * クリックすると再生・一時停止を切り替えます。
  */
 export const PausableMovie = ({ src }: Props) => {
-  const { data, isLoading } = useFetch(src, fetchBinary);
+  const [inViewRef, inView] = useInView();
+  const { data, isLoading } = useFetch(inView ? src : "", inView ? fetchBinary : async () => null);
 
   const animatorRef = useRef<Animator>(null);
   const canvasCallbackRef = useCallback<RefCallback<HTMLCanvasElement>>(
@@ -61,8 +63,14 @@ export const PausableMovie = ({ src }: Props) => {
     });
   }, []);
 
-  if (isLoading || data === null) {
-    return null;
+  if (!inView || isLoading || data === null) {
+    return (
+      <div ref={inViewRef}>
+        <AspectRatioBox aspectHeight={1} aspectWidth={1}>
+          <div className="bg-cax-surface-subtle h-full w-full" />
+        </AspectRatioBox>
+      </div>
+    );
   }
 
   return (
