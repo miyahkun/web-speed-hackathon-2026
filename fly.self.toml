@@ -8,6 +8,7 @@ NODE_VERSION = "24.14.0"
 [env]
 PORT = "8080"
 NODE_ENV = "production"
+PERF_LOG = "1"
 
 [http_service]
 internal_port = 8080

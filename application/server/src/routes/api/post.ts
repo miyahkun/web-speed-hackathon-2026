@@ -2,20 +2,25 @@ import { Router } from "express";
 import httpErrors from "http-errors";
 
 import { Comment, Post } from "@web-speed-hackathon-2026/server/src/models";
+import { createTimer } from "@web-speed-hackathon-2026/server/src/utils/perf";
 
 export const postRouter = Router();
 
 postRouter.get("/posts", async (req, res) => {
+  const t = createTimer("GET /posts");
   const posts = await Post.findAll({
     limit: req.query["limit"] != null ? Number(req.query["limit"]) : undefined,
     offset: req.query["offset"] != null ? Number(req.query["offset"]) : undefined,
   });
+  t.step("db:findAll");
 
   return res.status(200).type("application/json").send(posts);
 });
 
 postRouter.get("/posts/:postId", async (req, res) => {
+  const t = createTimer(`GET /posts/${req.params.postId}`);
   const post = await Post.findByPk(req.params.postId);
+  t.step("db:findByPk");
 
   if (post === null) {
     throw new httpErrors.NotFound();
