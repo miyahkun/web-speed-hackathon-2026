@@ -3,10 +3,12 @@ import { Op } from "sequelize";
 
 import { Post } from "@web-speed-hackathon-2026/server/src/models";
 import { parseSearchQuery } from "@web-speed-hackathon-2026/server/src/utils/parse_search_query.js";
+import { createTimer } from "@web-speed-hackathon-2026/server/src/utils/perf";
 
 export const searchRouter = Router();
 
 searchRouter.get("/search", async (req, res) => {
+  const t = createTimer(`GET /search?q=${req.query["q"]}`);
   const query = req.query["q"];
 
   if (typeof query !== "string" || query.trim() === "") {
@@ -14,6 +16,7 @@ searchRouter.get("/search", async (req, res) => {
   }
 
   const { keywords, sinceDate, untilDate } = parseSearchQuery(query);
+  t.step("parseSearchQuery");
 
   // キーワードも日付フィルターもない場合は空配列を返す
   if (!keywords && !sinceDate && !untilDate) {
@@ -46,6 +49,7 @@ searchRouter.get("/search", async (req, res) => {
       ...dateWhere,
     },
   });
+  t.step("db:postsByText");
 
   // ユーザー名/名前での検索（キーワードがある場合のみ）
   let postsByUser: typeof postsByText = [];
@@ -72,6 +76,7 @@ searchRouter.get("/search", async (req, res) => {
       offset,
       where: dateWhere,
     });
+    t.step("db:postsByUser");
   }
 
   const postIdSet = new Set<string>();
@@ -87,6 +92,8 @@ searchRouter.get("/search", async (req, res) => {
   mergedPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
   const result = mergedPosts.slice(offset || 0, (offset || 0) + (limit || mergedPosts.length));
+  t.step("merge+sort");
+  t.end();
 
   return res.status(200).type("application/json").send(result);
 });
