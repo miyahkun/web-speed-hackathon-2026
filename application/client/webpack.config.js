@@ -25,7 +25,7 @@ const config = {
     ],
     static: [PUBLIC_PATH, UPLOAD_PATH],
   },
-  devtool: "source-map",
+  devtool: false,
   entry: {
     main: [
       path.resolve(SRC_PATH, "./index.css"),
