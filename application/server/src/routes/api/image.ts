@@ -65,11 +65,14 @@ imageRouter.post("/images", async (req, res) => {
   }
 
   // EXIF から ImageDescription を読み取る
+  // TIFF の場合、sharp は exif を返さないため、ファイルバイナリから直接 IFD を読む
   let alt = "";
   try {
     const meta = await sharp(req.body).metadata();
     if (meta.exif) {
       alt = readImageDescription(meta.exif);
+    } else if (meta.format === "tiff") {
+      alt = readImageDescription(req.body as Buffer);
     }
   } catch {
     // メタデータ読み取りエラーは無視
