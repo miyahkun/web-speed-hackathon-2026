@@ -1,3 +1,5 @@
+import { promises as fs } from "fs";
+
 import history from "connect-history-api-fallback";
 import { Router } from "express";
 import type { ServerResponse } from "http";
@@ -47,6 +49,32 @@ export const staticRouter = Router();
 
 // SPA 対応のため、ファイルが存在しないときに index.html を返す
 staticRouter.use(history());
+
+// MP3 が未生成の場合、元ファイル（wav, ogg, flac 等）にフォールバックする
+staticRouter.use("/sounds", async (req, res, next) => {
+  if (!req.path.endsWith(".mp3")) return next();
+
+  const mp3Path = path.resolve(UPLOAD_PATH, "sounds", path.basename(req.path));
+  try {
+    await fs.access(mp3Path);
+    return next(); // MP3 が存在するのでそのまま配信
+  } catch {
+    // MP3 がなければ同じ soundId で別拡張子のファイルを探す
+    const soundId = path.basename(req.path, ".mp3");
+    const soundsDir = path.resolve(UPLOAD_PATH, "sounds");
+    try {
+      const files = await fs.readdir(soundsDir);
+      const fallback = files.find((f) => f.startsWith(soundId + ".") && !f.endsWith(".mp3"));
+      if (fallback) {
+        const fallbackPath = path.resolve(soundsDir, fallback);
+        res.setHeader("Cache-Control", "no-cache");
+        const data = await fs.readFile(fallbackPath);
+        return res.send(data);
+      }
+    } catch {}
+    return next();
+  }
+});
 
 staticRouter.use(
   serveStatic(UPLOAD_PATH, {

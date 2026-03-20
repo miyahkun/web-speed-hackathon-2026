@@ -39,7 +39,7 @@ if (PERF_LOG) {
 
 app.use(sessionMiddleware);
 app.use(bodyParser.json());
-app.use(bodyParser.raw({ limit: "10mb" }));
+app.use(bodyParser.raw({ limit: "20mb" }));
 
 app.use("/api/v1", (_req, res, next) => {
   res.header({

@@ -1,10 +1,10 @@
 import { execFile } from "child_process";
 import { promises as fs } from "fs";
-import os from "os";
 import path from "path";
 import { promisify } from "util";
 
 import { Router } from "express";
+import { fileTypeFromBuffer } from "file-type";
 import httpErrors from "http-errors";
 import { v4 as uuidv4 } from "uuid";
 
@@ -26,26 +26,32 @@ soundRouter.post("/sounds", async (req, res) => {
   // メタデータを先に抽出（元ファイルから）
   const { artist, title } = await extractMetadataFromSound(req.body);
 
-  const tmpInput = path.join(os.tmpdir(), `${uuidv4()}_input`);
+  // アップロードされたファイルの拡張子を判定
+  const type = await fileTypeFromBuffer(req.body);
+  const origExt = type?.ext ?? "bin";
+
   const soundId = uuidv4();
-  const outputPath = path.resolve(UPLOAD_PATH, `./sounds/${soundId}.mp3`);
+  const soundsDir = path.resolve(UPLOAD_PATH, "sounds");
+  const origPath = path.resolve(soundsDir, `${soundId}.${origExt}`);
+  const mp3Path = path.resolve(soundsDir, `${soundId}.mp3`);
 
-  try {
-    await fs.mkdir(path.resolve(UPLOAD_PATH, "sounds"), { recursive: true });
-    await fs.writeFile(tmpInput, req.body);
+  await fs.mkdir(soundsDir, { recursive: true });
 
-    // MP3に変換
-    await execFileAsync("ffmpeg", [
-      "-i", tmpInput,
-      "-vn",
-      "-c:a", "libmp3lame",
-      "-q:a", "4",
-      "-y",
-      outputPath,
-    ]);
-  } finally {
-    await fs.unlink(tmpInput).catch(() => {});
-  }
+  // 元ファイルをそのまま保存（即座に再生可能にする）
+  await fs.writeFile(origPath, req.body);
 
+  // バックグラウンドで MP3 に変換し、完了したら元ファイルを削除
+  execFileAsync("ffmpeg", [
+    "-i", origPath,
+    "-vn",
+    "-c:a", "libmp3lame",
+    "-b:a", "128k",
+    "-compression_level", "0",
+    "-y",
+    mp3Path,
+  ]).then(() => {
+    fs.unlink(origPath).catch(() => {});
+  }).catch(() => {});
+  // 変換完了を待たずにレスポンスを返す
   return res.status(200).type("application/json").send({ artist, id: soundId, title });
 });
