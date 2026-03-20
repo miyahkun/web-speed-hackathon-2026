@@ -45,7 +45,10 @@ export const SoundPlayer = ({ sound }: Props) => {
   if (!inView || isLoading || data === null || blobUrl === null) {
     return (
       <div ref={inViewRef} className="bg-cax-surface-subtle flex h-full w-full items-center justify-center p-4">
-        <p className="text-cax-text-muted text-sm">{sound.title}</p>
+        <div>
+          <p className="text-sm font-bold">{sound.title}</p>
+          <p className="text-cax-text-muted text-sm">{sound.artist}</p>
+        </div>
       </div>
     );
   }
