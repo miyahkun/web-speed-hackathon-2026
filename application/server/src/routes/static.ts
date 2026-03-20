@@ -20,8 +20,8 @@ const LONG_CACHE_EXTS = new Set([
 function setCacheHeaders(res: ServerResponse, filePath: string) {
   const basename = path.basename(filePath);
 
-  // chunk-{contenthash}.js はコンテンツハッシュ付きなので長期キャッシュ
-  if (/chunk-[a-f0-9]+\.js$/.test(basename)) {
+  // コンテンツハッシュ付きファイル (main.xxxx.js, chunk-xxxx.js, main.xxxx.css 等) は長期キャッシュ
+  if (/\.[a-f0-9]{8,}\.(js|css)$/.test(basename)) {
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     return;
   }
