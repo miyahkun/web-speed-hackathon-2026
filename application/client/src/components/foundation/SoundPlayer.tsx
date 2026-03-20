@@ -42,23 +42,15 @@ export const SoundPlayer = ({ sound }: Props) => {
     });
   }, []);
 
-  if (!inView || isLoading || data === null || blobUrl === null) {
-    return (
-      <div ref={inViewRef} className="bg-cax-surface-subtle flex h-full w-full items-center justify-center p-4">
-        <div>
-          <p className="text-sm font-bold">{sound.title}</p>
-          <p className="text-cax-text-muted text-sm">{sound.artist}</p>
-        </div>
-      </div>
-    );
-  }
+  const isReady = inView && !isLoading && data !== null && blobUrl !== null;
 
   return (
-    <div className="bg-cax-surface-subtle flex h-full w-full items-center justify-center">
-      <audio ref={audioRef} loop={true} onTimeUpdate={handleTimeUpdate} src={blobUrl} />
+    <div ref={inViewRef} className="bg-cax-surface-subtle flex h-full w-full items-center justify-center">
+      {isReady && <audio ref={audioRef} loop={true} onTimeUpdate={handleTimeUpdate} src={blobUrl} />}
       <div className="p-2">
         <button
           className="bg-cax-accent text-cax-surface-raised flex h-8 w-8 items-center justify-center rounded-full text-sm hover:opacity-75"
+          disabled={!isReady}
           onClick={handleTogglePlaying}
           type="button"
         >
@@ -74,15 +66,19 @@ export const SoundPlayer = ({ sound }: Props) => {
         </p>
         <div className="pt-2">
           <AspectRatioBox aspectHeight={1} aspectWidth={10}>
-            <div className="relative h-full w-full">
-              <div className="absolute inset-0 h-full w-full">
-                <SoundWaveSVG soundData={data} />
+            {isReady && data !== null ? (
+              <div className="relative h-full w-full">
+                <div className="absolute inset-0 h-full w-full">
+                  <SoundWaveSVG soundData={data} />
+                </div>
+                <div
+                  className="bg-cax-surface-subtle absolute inset-0 h-full w-full opacity-75"
+                  style={{ left: `${currentTimeRatio * 100}%` }}
+                ></div>
               </div>
-              <div
-                className="bg-cax-surface-subtle absolute inset-0 h-full w-full opacity-75"
-                style={{ left: `${currentTimeRatio * 100}%` }}
-              ></div>
-            </div>
+            ) : (
+              <div className="h-full w-full" />
+            )}
           </AspectRatioBox>
         </div>
       </div>
