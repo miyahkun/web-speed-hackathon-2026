@@ -77,8 +77,11 @@ imageRouter.post("/images", async (req, res) => {
 
   const imageId = uuidv4();
 
-  // アップロード画像を WebP に変換して保存
-  const webpBuffer = await sharp(req.body).webp({ quality: 80 }).toBuffer();
+  // アップロード画像をリサイズ・WebP に変換して保存（表示領域の2倍 = 1280px幅に制限）
+  const webpBuffer = await sharp(req.body)
+    .resize({ width: 1280, withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
   const filePath = path.resolve(UPLOAD_PATH, `./images/${imageId}.webp`);
   await fs.mkdir(path.resolve(UPLOAD_PATH, "images"), { recursive: true });
   await fs.writeFile(filePath, webpBuffer);
