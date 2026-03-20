@@ -1,13 +1,6 @@
-import { useSyncExternalStore } from "react";
+import { useSearchParams as useRouterSearchParams } from "react-router";
 
 export function useSearchParams(): [URLSearchParams] {
-  const search = useSyncExternalStore(
-    (callback) => {
-      window.addEventListener("popstate", callback);
-      return () => window.removeEventListener("popstate", callback);
-    },
-    () => window.location.search,
-  );
-
-  return [new URLSearchParams(search)];
+  const [searchParams] = useRouterSearchParams();
+  return [searchParams];
 }
