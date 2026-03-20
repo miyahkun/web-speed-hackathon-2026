@@ -17,7 +17,10 @@ async function sendNewPost({ images, movie, sound, text }: SubmitParams): Promis
   if (sound) {
     // WAVヘッダー（16KB）だけ送ってメタデータを高速に取得
     const header = sound.slice(0, 16 * 1024);
-    soundMeta = await sendFile<{ artist?: string; id: string; title?: string }>("/api/v1/sounds", header);
+    soundMeta = await sendFile<{ artist?: string; id: string; title?: string }>(
+      "/api/v1/sounds",
+      header,
+    );
     // フルファイルはバックグラウンドでアップロード（投稿フローをブロックしない）
     sendFile(`/api/v1/sounds/${soundMeta.id}/data`, sound, "PUT").catch(() => {});
   }
