@@ -19,6 +19,7 @@ interface DmTypingEvent {
 }
 
 const TYPING_INDICATOR_DURATION_MS = 10 * 1000;
+const MESSAGE_PAGE_SIZE = 50;
 
 interface Props {
   activeUser: Models.User | null;
@@ -31,6 +32,8 @@ export const DirectMessageContainer = ({ activeUser, authModalId }: Props) => {
   const [conversation, setConversation] = useState<Models.DirectMessageConversation | null>(null);
   const [conversationError, setConversationError] = useState<Error | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const [isPeerTyping, setIsPeerTyping] = useState(false);
   const peerTypingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -42,15 +45,45 @@ export const DirectMessageContainer = ({ activeUser, authModalId }: Props) => {
 
     try {
       const data = await fetchJSON<Models.DirectMessageConversation>(
-        `/api/v1/dm/${conversationId}`,
+        `/api/v1/dm/${conversationId}?limit=${MESSAGE_PAGE_SIZE}`,
       );
       setConversation(data);
       setConversationError(null);
+      setHasMore((data.messages?.length ?? 0) >= MESSAGE_PAGE_SIZE);
     } catch (error) {
       setConversation(null);
       setConversationError(error as Error);
     }
   }, [activeUser, conversationId]);
+
+  const loadOlderMessages = useCallback(async () => {
+    if (activeUser == null || conversation == null || !hasMore || isLoadingMore) {
+      return;
+    }
+
+    const oldestMessage = conversation.messages?.[0];
+    if (!oldestMessage) return;
+
+    setIsLoadingMore(true);
+    try {
+      const data = await fetchJSON<Models.DirectMessageConversation>(
+        `/api/v1/dm/${conversationId}?limit=${MESSAGE_PAGE_SIZE}&before=${encodeURIComponent(oldestMessage.createdAt)}`,
+      );
+      const olderMessages = data.messages ?? [];
+      setHasMore(olderMessages.length >= MESSAGE_PAGE_SIZE);
+      if (olderMessages.length > 0) {
+        setConversation((prev) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            messages: [...olderMessages, ...prev.messages],
+          };
+        });
+      }
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [activeUser, conversation, conversationId, hasMore, isLoadingMore]);
 
   const sendRead = useCallback(async () => {
     await sendJSON(`/api/v1/dm/${conversationId}/read`, {});
@@ -135,6 +168,9 @@ export const DirectMessageContainer = ({ activeUser, authModalId }: Props) => {
         isPeerTyping={isPeerTyping}
         isSubmitting={isSubmitting}
         onSubmit={handleSubmit}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={loadOlderMessages}
       />
     </>
   );

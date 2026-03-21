@@ -23,6 +23,9 @@ interface Props {
   isSubmitting: boolean;
   onTyping: () => void;
   onSubmit: (params: DirectMessageFormData) => Promise<void>;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
 }
 
 export const DirectMessagePage = ({
@@ -33,9 +36,15 @@ export const DirectMessagePage = ({
   isSubmitting,
   onTyping,
   onSubmit,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
 }: Props) => {
   const formRef = useRef<HTMLFormElement>(null);
   const textAreaId = useId();
+  const messageListRef = useRef<HTMLDivElement>(null);
+  const prevMessageCountRef = useRef(0);
+  const isInitialMount = useRef(true);
 
   const peer =
     conversation.initiator.id !== activeUser.id ? conversation.initiator : conversation.member;
@@ -72,11 +81,63 @@ export const DirectMessagePage = ({
     [onSubmit, text],
   );
 
+  // 初回マウント時とメッセージ追加時に最下部へスクロール
   useEffect(() => {
-    const observer = new ResizeObserver(() => {
+    const currentCount = conversation.messages.length;
+    const prevCount = prevMessageCountRef.current;
+
+    if (isInitialMount.current) {
+      // 初回: 即座に最下部へ
+      isInitialMount.current = false;
       window.scrollTo(0, document.body.scrollHeight);
+    } else if (currentCount > prevCount && prevCount > 0) {
+      const addedAtEnd = currentCount - prevCount;
+      // 末尾に追加（新着メッセージ）の場合のみスクロール
+      if (addedAtEnd <= 5) {
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+    }
+
+    prevMessageCountRef.current = currentCount;
+  }, [conversation.messages.length]);
+
+  // 上端スクロールで過去メッセージを読み込み
+  useEffect(() => {
+    if (!hasMore) return;
+
+    const handleScroll = () => {
+      if (window.scrollY < 200 && !isLoadingMore) {
+        onLoadMore();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasMore, isLoadingMore, onLoadMore]);
+
+  // 過去メッセージ読み込み後にスクロール位置を維持
+  useEffect(() => {
+    const el = messageListRef.current;
+    if (!el) return;
+
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.addedNodes.length > 0 && window.scrollY < 200) {
+          // 追加された要素の高さ分スクロール位置を補正
+          let addedHeight = 0;
+          mutation.addedNodes.forEach((node) => {
+            if (node instanceof HTMLElement) {
+              addedHeight += node.offsetHeight;
+            }
+          });
+          if (addedHeight > 0) {
+            window.scrollBy(0, addedHeight);
+          }
+        }
+      }
     });
-    observer.observe(document.body);
+
+    observer.observe(el, { childList: true });
     return () => observer.disconnect();
   }, []);
 
@@ -108,8 +169,24 @@ export const DirectMessagePage = ({
         </div>
       </header>
 
-      <div className="bg-cax-surface-subtle flex-1 space-y-4 overflow-y-auto px-4 pt-4 pb-8">
-        {conversation.messages.length === 0 && (
+      <div ref={messageListRef} className="bg-cax-surface-subtle flex-1 space-y-4 overflow-y-auto px-4 pt-4 pb-8">
+        {hasMore && (
+          <div className="text-center py-2">
+            {isLoadingMore ? (
+              <span className="text-cax-text-muted text-sm">読み込み中...</span>
+            ) : (
+              <button
+                className="text-cax-accent text-sm hover:underline"
+                onClick={onLoadMore}
+                type="button"
+              >
+                過去のメッセージを読み込む
+              </button>
+            )}
+          </div>
+        )}
+
+        {conversation.messages.length === 0 && !hasMore && (
           <p className="text-cax-text-muted text-center text-sm">
             まだメッセージはありません。最初のメッセージを送信してみましょう。
           </p>
@@ -121,6 +198,7 @@ export const DirectMessagePage = ({
 
             return (
               <li
+                key={message.id}
                 className={classNames(
                   "flex flex-col w-full",
                   isActiveUserSend ? "items-end" : "items-start",
