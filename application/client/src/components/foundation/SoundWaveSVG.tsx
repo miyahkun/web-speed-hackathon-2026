@@ -5,36 +5,6 @@ interface ParsedData {
   peaks: number[];
 }
 
-const PEAK_COUNT = 100;
-
-async function calculate(data: ArrayBuffer): Promise<ParsedData> {
-  const audioCtx = new AudioContext();
-  const buffer = await audioCtx.decodeAudioData(data.slice(0));
-
-  const left = buffer.getChannelData(0);
-  const right = buffer.numberOfChannels > 1 ? buffer.getChannelData(1) : left;
-  const len = left.length;
-  const chunkSize = Math.ceil(len / PEAK_COUNT);
-
-  const peaks = Array.from<number>({ length: PEAK_COUNT });
-  let max = 0;
-
-  for (let i = 0; i < PEAK_COUNT; i++) {
-    const start = i * chunkSize;
-    const end = Math.min(start + chunkSize, len);
-    let sum = 0;
-    for (let j = start; j < end; j++) {
-      sum += (Math.abs(left[j]!) + Math.abs(right[j]!)) * 0.5;
-    }
-    const avg = sum / (end - start);
-    peaks[i] = avg;
-    if (avg > max) max = avg;
-  }
-
-  await audioCtx.close();
-  return { max, peaks };
-}
-
 interface Props {
   soundData: ArrayBuffer;
 }
@@ -47,9 +17,20 @@ export const SoundWaveSVG = ({ soundData }: Props) => {
   });
 
   useEffect(() => {
-    calculate(soundData).then(({ max, peaks }) => {
-      setPeaks({ max, peaks });
+    const worker = new Worker(
+      new URL(
+        "@web-speed-hackathon-2026/client/src/workers/sound_wave_worker.ts",
+        import.meta.url,
+      ),
+    );
+    worker.postMessage(soundData.slice(0));
+    worker.addEventListener("message", (e: MessageEvent<ParsedData>) => {
+      setPeaks(e.data);
+      worker.terminate();
     });
+    return () => {
+      worker.terminate();
+    };
   }, [soundData]);
 
   return (
