@@ -2,6 +2,7 @@ import classNames from "classnames";
 import { useLocation } from "react-router";
 
 import { Link } from "@web-speed-hackathon-2026/client/src/components/foundation/Link";
+import { useCallback } from "react";
 
 interface Props {
   badge?: React.ReactNode;
@@ -15,6 +16,16 @@ interface Props {
 export const NavigationItem = ({ badge, href, icon, command, commandfor, text }: Props) => {
   const location = useLocation();
   const isActive = location.pathname === href;
+
+  const handleClick = useCallback(() => {
+    if (command === "show-modal" && commandfor) {
+      const dialog = document.getElementById(commandfor);
+      if (dialog instanceof HTMLDialogElement) {
+        dialog.showModal();
+      }
+    }
+  }, [command, commandfor]);
+
   return (
     <li>
       {href !== undefined ? (
@@ -37,6 +48,7 @@ export const NavigationItem = ({ badge, href, icon, command, commandfor, text }:
           type="button"
           command={command}
           commandfor={commandfor}
+          onClick={handleClick}
         >
           <span className="relative text-xl lg:pr-2 lg:text-3xl">
             {icon}
