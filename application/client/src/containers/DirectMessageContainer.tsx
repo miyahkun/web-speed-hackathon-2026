@@ -98,15 +98,22 @@ export const DirectMessageContainer = ({ activeUser, authModalId }: Props) => {
     async (params: DirectMessageFormData) => {
       setIsSubmitting(true);
       try {
-        await sendJSON(`/api/v1/dm/${conversationId}/messages`, {
+        const message = await sendJSON<Models.DirectMessage>(`/api/v1/dm/${conversationId}/messages`, {
           body: params.body,
         });
-        loadConversation();
+        setConversation((prev) => {
+          if (!prev) return prev;
+          if (prev.messages.some((m) => m.id === message.id)) return prev;
+          return {
+            ...prev,
+            messages: [...prev.messages, { ...message, sender: activeUser! }],
+          };
+        });
       } finally {
         setIsSubmitting(false);
       }
     },
-    [conversationId, loadConversation],
+    [conversationId, activeUser],
   );
 
   const handleTyping = useCallback(async () => {
