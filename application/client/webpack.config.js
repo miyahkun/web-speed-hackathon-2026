@@ -101,6 +101,20 @@ const config = {
     minimize: true,
     splitChunks: {
       chunks: "all",
+      cacheGroups: {
+        react: {
+          test: /[\\/]node_modules[\\/](react|react-dom|react-router|scheduler|react-compiler-runtime)[\\/]/,
+          name: "vendor-react",
+          chunks: "initial",
+          priority: 20,
+        },
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          chunks: "initial",
+          priority: 10,
+          maxSize: 50000,
+        },
+      },
     },
     concatenateModules: true,
     usedExports: true,

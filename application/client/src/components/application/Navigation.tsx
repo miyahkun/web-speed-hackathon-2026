@@ -1,8 +1,15 @@
+import { lazy, Suspense } from "react";
+
 import { AccountMenu } from "@web-speed-hackathon-2026/client/src/components/application/AccountMenu";
 import { NavigationItem } from "@web-speed-hackathon-2026/client/src/components/application/NavigationItem";
-import { DirectMessageNotificationBadge } from "@web-speed-hackathon-2026/client/src/components/direct_message/DirectMessageNotificationBadge";
 import { CrokLogo } from "@web-speed-hackathon-2026/client/src/components/foundation/CrokLogo";
 import { FontAwesomeIcon } from "@web-speed-hackathon-2026/client/src/components/foundation/FontAwesomeIcon";
+
+const DirectMessageNotificationBadge = lazy(() =>
+  import(
+    "@web-speed-hackathon-2026/client/src/components/direct_message/DirectMessageNotificationBadge"
+  ).then((m) => ({ default: m.DirectMessageNotificationBadge })),
+);
 
 interface Props {
   activeUser: Models.User | null;
@@ -28,7 +35,7 @@ export const Navigation = ({ activeUser, authModalId, newPostModalId, onLogout }
           />
           {activeUser !== null ? (
             <NavigationItem
-              badge={<DirectMessageNotificationBadge />}
+              badge={<Suspense><DirectMessageNotificationBadge /></Suspense>}
               href="/dm"
               icon={<FontAwesomeIcon iconType="envelope" styleType="solid" />}
               text="DM"
