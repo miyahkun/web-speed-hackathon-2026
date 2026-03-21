@@ -67,10 +67,7 @@ const CACHE_BUSTER = "v=4";
 let indexHtmlCache: string | null = null;
 async function getIndexHtml(): Promise<string> {
   if (indexHtmlCache == null) {
-    indexHtmlCache = await fs.readFile(
-      path.resolve(CLIENT_DIST_PATH, "index.html"),
-      "utf-8",
-    );
+    indexHtmlCache = await fs.readFile(path.resolve(CLIENT_DIST_PATH, "index.html"), "utf-8");
   }
   return indexHtmlCache;
 }
@@ -84,9 +81,9 @@ staticRouter.get("/posts/:postId", async (req, res, next) => {
     if (post == null) return next();
 
     const postData = post.toJSON() as Record<string, unknown>;
-    const images = postData.images as Array<{ id: string }> | undefined;
-    const movie = postData.movie as { id: string } | undefined;
-    const user = postData.user as { profileImage?: { id: string } } | undefined;
+    const images = postData["images"] as Array<{ id: string }> | undefined;
+    const movie = postData["movie"] as { id: string } | undefined;
+    const user = postData["user"] as { profileImage?: { id: string } } | undefined;
 
     const preloadTags: string[] = [];
 

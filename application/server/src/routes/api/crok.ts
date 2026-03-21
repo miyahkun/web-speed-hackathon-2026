@@ -34,7 +34,7 @@ crokRouter.get("/crok/suggestions", async (req, res) => {
   const suggestions = await QaSuggestion.findAll({ logging: false });
   const candidates = suggestions.map((s) => s.question);
 
-  const q = typeof req.query.q === "string" ? req.query.q.trim() : "";
+  const q = typeof req.query["q"] === "string" ? req.query["q"].trim() : "";
   if (!q) {
     res.json({ suggestions: candidates });
     return;
@@ -63,7 +63,7 @@ crokRouter.get("/crok/suggestions", async (req, res) => {
 });
 
 crokRouter.get("/crok/sentiment", async (req, res) => {
-  const text = typeof req.query.text === "string" ? req.query.text.trim() : "";
+  const text = typeof req.query["text"] === "string" ? req.query["text"].trim() : "";
   if (!text) {
     res.json({ score: 0, label: "neutral" });
     return;

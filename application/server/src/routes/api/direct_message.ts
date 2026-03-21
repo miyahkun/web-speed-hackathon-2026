@@ -100,8 +100,8 @@ directMessageRouter.get("/dm/:conversationId", async (req, res) => {
     throw new httpErrors.Unauthorized();
   }
 
-  const limit = Math.min(Number(req.query.limit) || 50, 200);
-  const before = req.query.before as string | undefined;
+  const limit = Math.min(Number(req.query["limit"]) || 50, 200);
+  const before = req.query["before"] as string | undefined;
 
   const conversation = await DirectMessageConversation.findOne({
     where: {
