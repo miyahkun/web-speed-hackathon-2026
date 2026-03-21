@@ -74,42 +74,44 @@ async function getIndexHtml(): Promise<string> {
 
 export const staticRouter = Router();
 
-// ホームページ: 最初の投稿のLCP画像をpreload
+// SSR バンドル (ビルド時に生成)
+let ssrModule: { renderHome: (posts: unknown[]) => string } | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  ssrModule = require(path.resolve(CLIENT_DIST_PATH, "ssr.cjs")) as typeof ssrModule;
+} catch {
+  // SSR バンドルが無い場合はフォールバック
+}
+
+// ホームページ: SSR + 初期データ注入
 staticRouter.get("/", async (_req, res, next) => {
   try {
-    const posts = await Post.findAll({ limit: 3 });
-    const preloadTags: string[] = [];
+    const posts = await Post.findAll({ limit: 30 });
+    const postsJSON = posts.map((p) => p.toJSON());
+    const html = await getIndexHtml();
 
-    for (const post of posts) {
-      const postData = post.toJSON() as Record<string, unknown>;
-      const images = postData["images"] as Array<{ id: string }> | undefined;
-      const movie = postData["movie"] as { id: string } | undefined;
-      const user = postData["user"] as { profileImage?: { id: string } } | undefined;
-
-      if (user?.profileImage) {
-        preloadTags.push(
-          `<link rel="preload" as="image" href="/images/profiles/${user.profileImage.id}.webp?${CACHE_BUSTER}">`,
-        );
-      }
-      if (images && images.length > 0) {
-        preloadTags.push(
-          `<link rel="preload" as="image" href="/images/${images[0]!.id}.webp?${CACHE_BUSTER}">`,
-        );
-      }
-      if (movie) {
-        preloadTags.push(
-          `<link rel="preload" as="fetch" crossorigin href="/movies/${movie.id}.mp4?${CACHE_BUSTER}">`,
-        );
+    // SSR で HTML を生成
+    let appHtml = "";
+    if (ssrModule) {
+      try {
+        appHtml = ssrModule.renderHome(postsJSON);
+      } catch {
+        // SSR 失敗時はクライアントレンダリングにフォールバック
       }
     }
 
-    if (preloadTags.length > 0) {
-      const html = await getIndexHtml();
-      const injected = html.replace("</head>", `${preloadTags.join("")}</head>`);
-      res.setHeader("Content-Type", "text/html");
-      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-      return res.send(injected);
+    // 初期データをインライン注入 (API コール不要に)
+    const dataScript = `<script>window.__SSR_POSTS__=${JSON.stringify(postsJSON)};</script>`;
+
+    let injected = html;
+    if (appHtml) {
+      injected = injected.replace('<div id="app"></div>', `<div id="app">${appHtml}</div>`);
     }
+    injected = injected.replace("</head>", `${dataScript}</head>`);
+
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+    return res.send(injected);
   } catch {
     // DB error — fall through
   }

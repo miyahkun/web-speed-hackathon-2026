@@ -1,14 +1,21 @@
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { Provider } from "react-redux";
 import { BrowserRouter } from "react-router";
 
 import { AppContainer } from "@web-speed-hackathon-2026/client/src/containers/AppContainer";
 import { store } from "@web-speed-hackathon-2026/client/src/store";
 
-createRoot(document.getElementById("app")!).render(
+const app = document.getElementById("app")!;
+const element = (
   <Provider store={store}>
     <BrowserRouter>
       <AppContainer />
     </BrowserRouter>
-  </Provider>,
+  </Provider>
 );
+
+if (app.children.length > 0) {
+  hydrateRoot(app, element);
+} else {
+  createRoot(app).render(element);
+}
