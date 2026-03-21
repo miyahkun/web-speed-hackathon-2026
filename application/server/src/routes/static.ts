@@ -6,6 +6,7 @@ import history from "connect-history-api-fallback";
 import { Router } from "express";
 import serveStatic from "serve-static";
 
+import { Post } from "@web-speed-hackathon-2026/server/src/models";
 import {
   CLIENT_DIST_PATH,
   PUBLIC_PATH,
@@ -61,7 +62,67 @@ function setCacheHeaders(res: ServerResponse, filePath: string) {
   res.setHeader("Cache-Control", "public, max-age=3600");
 }
 
+const CACHE_BUSTER = "v=4";
+
+let indexHtmlCache: string | null = null;
+async function getIndexHtml(): Promise<string> {
+  if (indexHtmlCache == null) {
+    indexHtmlCache = await fs.readFile(
+      path.resolve(CLIENT_DIST_PATH, "index.html"),
+      "utf-8",
+    );
+  }
+  return indexHtmlCache;
+}
+
 export const staticRouter = Router();
+
+// 投稿詳細ページ: LCP画像のpreloadヒントをHTMLに注入
+staticRouter.get("/posts/:postId", async (req, res, next) => {
+  try {
+    const post = await Post.findByPk(req.params.postId);
+    if (post == null) return next();
+
+    const postData = post.toJSON() as Record<string, unknown>;
+    const images = postData.images as Array<{ id: string }> | undefined;
+    const movie = postData.movie as { id: string } | undefined;
+    const user = postData.user as { profileImage?: { id: string } } | undefined;
+
+    const preloadTags: string[] = [];
+
+    // 最初の画像をpreload
+    if (images && images.length > 0) {
+      preloadTags.push(
+        `<link rel="preload" as="image" href="/images/${images[0]!.id}.webp?${CACHE_BUSTER}">`,
+      );
+    }
+
+    // 動画をpreload
+    if (movie) {
+      preloadTags.push(
+        `<link rel="preload" as="video" href="/movies/${movie.id}.mp4?${CACHE_BUSTER}">`,
+      );
+    }
+
+    // プロフィール画像をpreload
+    if (user?.profileImage) {
+      preloadTags.push(
+        `<link rel="preload" as="image" href="/images/profiles/${user.profileImage.id}.webp?${CACHE_BUSTER}">`,
+      );
+    }
+
+    if (preloadTags.length > 0) {
+      const html = await getIndexHtml();
+      const injected = html.replace("</head>", `${preloadTags.join("")}</head>`);
+      res.setHeader("Content-Type", "text/html");
+      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.send(injected);
+    }
+  } catch {
+    // DB error — fall through to normal static serving
+  }
+  return next();
+});
 
 // SPA 対応のため、ファイルが存在しないときに index.html を返す
 staticRouter.use(history());

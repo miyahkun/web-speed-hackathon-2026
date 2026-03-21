@@ -88,14 +88,18 @@ export const DirectMessagePage = ({
     const prevCount = prevMessageCountRef.current;
 
     if (isInitialMount.current) {
-      // 初回: 即座に最下部へ
+      // 初回: レイアウト完了後に最下部へ
       isInitialMount.current = false;
-      window.scrollTo(0, document.body.scrollHeight);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, document.body.scrollHeight);
+      });
     } else if (currentCount > prevCount && prevCount > 0) {
       const addedAtEnd = currentCount - prevCount;
       // 末尾に追加（新着メッセージ）の場合のみスクロール
       if (addedAtEnd <= 5) {
-        window.scrollTo(0, document.body.scrollHeight);
+        requestAnimationFrame(() => {
+          window.scrollTo(0, document.body.scrollHeight);
+        });
       }
     }
 
@@ -124,16 +128,18 @@ export const DirectMessagePage = ({
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.addedNodes.length > 0 && window.scrollY < 200) {
-          // 追加された要素の高さ分スクロール位置を補正
-          let addedHeight = 0;
-          mutation.addedNodes.forEach((node) => {
-            if (node instanceof HTMLElement) {
-              addedHeight += node.offsetHeight;
+          // レイアウト読み取りをrAFに遅延して強制レイアウトを回避
+          requestAnimationFrame(() => {
+            let addedHeight = 0;
+            mutation.addedNodes.forEach((node) => {
+              if (node instanceof HTMLElement) {
+                addedHeight += node.offsetHeight;
+              }
+            });
+            if (addedHeight > 0) {
+              window.scrollBy(0, addedHeight);
             }
           });
-          if (addedHeight > 0) {
-            window.scrollBy(0, addedHeight);
-          }
         }
       }
     });
