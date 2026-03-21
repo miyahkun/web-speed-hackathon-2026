@@ -74,6 +74,48 @@ async function getIndexHtml(): Promise<string> {
 
 export const staticRouter = Router();
 
+// ホームページ: 最初の投稿のLCP画像をpreload
+staticRouter.get("/", async (_req, res, next) => {
+  try {
+    const posts = await Post.findAll({ limit: 3 });
+    const preloadTags: string[] = [];
+
+    for (const post of posts) {
+      const postData = post.toJSON() as Record<string, unknown>;
+      const images = postData["images"] as Array<{ id: string }> | undefined;
+      const movie = postData["movie"] as { id: string } | undefined;
+      const user = postData["user"] as { profileImage?: { id: string } } | undefined;
+
+      if (user?.profileImage) {
+        preloadTags.push(
+          `<link rel="preload" as="image" href="/images/profiles/${user.profileImage.id}.webp?${CACHE_BUSTER}">`,
+        );
+      }
+      if (images && images.length > 0) {
+        preloadTags.push(
+          `<link rel="preload" as="image" href="/images/${images[0]!.id}.webp?${CACHE_BUSTER}">`,
+        );
+      }
+      if (movie) {
+        preloadTags.push(
+          `<link rel="preload" as="fetch" crossorigin href="/movies/${movie.id}.mp4?${CACHE_BUSTER}">`,
+        );
+      }
+    }
+
+    if (preloadTags.length > 0) {
+      const html = await getIndexHtml();
+      const injected = html.replace("</head>", `${preloadTags.join("")}</head>`);
+      res.setHeader("Content-Type", "text/html");
+      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+      return res.send(injected);
+    }
+  } catch {
+    // DB error — fall through
+  }
+  return next();
+});
+
 // 投稿詳細ページ: LCP画像のpreloadヒントをHTMLに注入
 staticRouter.get("/posts/:postId", async (req, res, next) => {
   try {
