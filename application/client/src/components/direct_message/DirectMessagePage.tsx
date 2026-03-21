@@ -12,6 +12,7 @@ import {
 
 import { FontAwesomeIcon } from "@web-speed-hackathon-2026/client/src/components/foundation/FontAwesomeIcon";
 import { DirectMessageFormData } from "@web-speed-hackathon-2026/client/src/direct_message/types";
+import { debounce } from "@web-speed-hackathon-2026/client/src/utils/debounce";
 import { formatHM } from "@web-speed-hackathon-2026/client/src/utils/format_date";
 import { getProfileImagePath } from "@web-speed-hackathon-2026/client/src/utils/get_path";
 
@@ -105,11 +106,11 @@ export const DirectMessagePage = ({
   useEffect(() => {
     if (!hasMore) return;
 
-    const handleScroll = () => {
+    const handleScroll = debounce(() => {
       if (window.scrollY < 200 && !isLoadingMore) {
         onLoadMore();
       }
-    };
+    }, 150);
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
