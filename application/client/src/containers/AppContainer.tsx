@@ -3,7 +3,7 @@ import { HelmetProvider } from "react-helmet";
 import { Route, Routes, useLocation, useNavigate } from "react-router";
 
 import { AppPage } from "@web-speed-hackathon-2026/client/src/components/application/AppPage";
-import { fetchJSON, sendJSON } from "@web-speed-hackathon-2026/client/src/utils/fetchers";
+import { sendJSON } from "@web-speed-hackathon-2026/client/src/utils/fetchers";
 
 const TimelineContainer = lazy(() =>
   import("@web-speed-hackathon-2026/client/src/containers/TimelineContainer").then((m) => ({
@@ -68,16 +68,9 @@ export const AppContainer = () => {
     window.scrollTo(0, 0);
   }, [pathname]);
 
-  const [activeUser, setActiveUser] = useState<Models.User | null>(null);
-  useEffect(() => {
-    void fetchJSON<Models.User>("/api/v1/me")
-      .then((user) => {
-        setActiveUser(user);
-      })
-      .catch(() => {
-        // not logged in
-      });
-  }, []);
+  const [activeUser, setActiveUser] = useState<Models.User | null>(
+    () => (window as unknown as { __SSR_USER__?: Models.User }).__SSR_USER__ ?? null,
+  );
   const handleLogout = useCallback(async () => {
     await sendJSON("/api/v1/signout", {});
     setActiveUser(null);

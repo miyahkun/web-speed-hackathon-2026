@@ -6,7 +6,7 @@ import history from "connect-history-api-fallback";
 import { Router } from "express";
 import serveStatic from "serve-static";
 
-import { Post } from "@web-speed-hackathon-2026/server/src/models";
+import { Post, User } from "@web-speed-hackathon-2026/server/src/models";
 import {
   CLIENT_DIST_PATH,
   PUBLIC_PATH,
@@ -73,6 +73,21 @@ async function getIndexHtml(): Promise<string> {
   return indexHtmlCache;
 }
 
+async function resolveSessionUser(
+  req: import("express").Request,
+): Promise<Record<string, unknown> | null> {
+  const userId = req.session.userId;
+  if (userId == null) return null;
+  const user = await User.findByPk(userId);
+  return user ? (user.toJSON() as Record<string, unknown>) : null;
+}
+
+function injectUserScript(html: string, user: Record<string, unknown> | null): string {
+  if (user == null) return html;
+  const script = `<script>window.__SSR_USER__=${JSON.stringify(user)};</script>`;
+  return html.replace("</head>", `${script}</head>`);
+}
+
 export const staticRouter = Router();
 
 // SSR バンドル (ビルド時に生成)
@@ -86,9 +101,12 @@ try {
 }
 
 // ホームページ: SSR + 初期データ注入
-staticRouter.get("/", async (_req, res, next) => {
+staticRouter.get("/", async (req, res, next) => {
   try {
-    const posts = await Post.findAll({ limit: 30 });
+    const [posts, ssrUser] = await Promise.all([
+      Post.findAll({ limit: 30 }),
+      resolveSessionUser(req),
+    ]);
     const postsJSON = posts.map((p) => p.toJSON());
     const html = await getIndexHtml();
 
@@ -110,6 +128,7 @@ staticRouter.get("/", async (_req, res, next) => {
       injected = injected.replace('<div id="app"></div>', `<div id="app">${appHtml}</div>`);
     }
     injected = injected.replace("</head>", `${dataScript}</head>`);
+    injected = injectUserScript(injected, ssrUser);
 
     res.setHeader("Content-Type", "text/html");
     res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
@@ -123,7 +142,10 @@ staticRouter.get("/", async (_req, res, next) => {
 // 投稿詳細ページ: LCP画像のpreloadヒントをHTMLに注入
 staticRouter.get("/posts/:postId", async (req, res, next) => {
   try {
-    const post = await Post.findByPk(req.params.postId);
+    const [post, ssrUser] = await Promise.all([
+      Post.findByPk(req.params.postId),
+      resolveSessionUser(req),
+    ]);
     if (post == null) return next();
 
     const postData = post.toJSON() as Record<string, unknown>;
@@ -154,13 +176,14 @@ staticRouter.get("/posts/:postId", async (req, res, next) => {
       );
     }
 
+    let html = await getIndexHtml();
     if (preloadTags.length > 0) {
-      const html = await getIndexHtml();
-      const injected = html.replace("</head>", `${preloadTags.join("")}</head>`);
-      res.setHeader("Content-Type", "text/html");
-      res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-      return res.send(injected);
+      html = html.replace("</head>", `${preloadTags.join("")}</head>`);
     }
+    html = injectUserScript(html, ssrUser);
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+    return res.send(html);
   } catch {
     // DB error — fall through to normal static serving
   }
@@ -168,14 +191,16 @@ staticRouter.get("/posts/:postId", async (req, res, next) => {
 });
 
 // 利用規約ページ: カスタムフォントをpreload
-staticRouter.get("/terms", async (_req, res, next) => {
+staticRouter.get("/terms", async (req, res, next) => {
   try {
-    const html = await getIndexHtml();
+    const ssrUser = await resolveSessionUser(req);
+    let html = await getIndexHtml();
     const preloadTag = `<link rel="preload" as="font" href="/fonts/ReiNoAreMincho-Heavy.subset.woff2" type="font/woff2" crossorigin>`;
-    const injected = html.replace("</head>", `${preloadTag}</head>`);
+    html = html.replace("</head>", `${preloadTag}</head>`);
+    html = injectUserScript(html, ssrUser);
     res.setHeader("Content-Type", "text/html");
     res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
-    return res.send(injected);
+    return res.send(html);
   } catch {
     return next();
   }
@@ -183,6 +208,25 @@ staticRouter.get("/terms", async (_req, res, next) => {
 
 // SPA 対応のため、ファイルが存在しないときに index.html を返す
 staticRouter.use(history() as unknown as import("express").RequestHandler);
+
+// 上記の個別ルートで処理されなかったHTMLリクエストにユーザー情報を注入
+staticRouter.use(async (req, res, next) => {
+  // history() が書き換えたリクエストのみ対象
+  if (!req.headers.accept?.includes("text/html")) return next();
+  // 静的ファイルは除外
+  if (path.extname(req.path) && req.path !== "/index.html") return next();
+  try {
+    const ssrUser = await resolveSessionUser(req);
+    if (ssrUser == null) return next();
+    let html = await getIndexHtml();
+    html = injectUserScript(html, ssrUser);
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+    return res.send(html);
+  } catch {
+    return next();
+  }
+});
 
 // Opus が未生成の場合、元ファイル（wav, ogg, flac 等）にフォールバックする
 staticRouter.use("/sounds", async (req, res, next) => {
