@@ -176,9 +176,12 @@ export const DirectMessagePage = ({
         </div>
       </header>
 
-      <div ref={messageListRef} className="bg-cax-surface-subtle flex-1 space-y-4 overflow-y-auto px-4 pt-4 pb-8">
+      <div
+        ref={messageListRef}
+        className="bg-cax-surface-subtle flex-1 space-y-4 overflow-y-auto px-4 pt-4 pb-8"
+      >
         {hasMore && (
-          <div className="text-center py-2">
+          <div className="py-2 text-center">
             {isLoadingMore ? (
               <span className="text-cax-text-muted text-sm">読み込み中...</span>
             ) : (

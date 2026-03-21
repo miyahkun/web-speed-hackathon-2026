@@ -18,10 +18,7 @@ export const SoundWaveSVG = ({ soundData }: Props) => {
 
   useEffect(() => {
     const worker = new Worker(
-      new URL(
-        "@web-speed-hackathon-2026/client/src/workers/sound_wave_worker.ts",
-        import.meta.url,
-      ),
+      new URL("@web-speed-hackathon-2026/client/src/workers/sound_wave_worker.ts", import.meta.url),
     );
     worker.postMessage(soundData.slice(0));
     worker.addEventListener("message", (e: MessageEvent<ParsedData>) => {

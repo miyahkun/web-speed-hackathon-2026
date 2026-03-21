@@ -6,9 +6,9 @@ import { CrokLogo } from "@web-speed-hackathon-2026/client/src/components/founda
 import { FontAwesomeIcon } from "@web-speed-hackathon-2026/client/src/components/foundation/FontAwesomeIcon";
 
 const DirectMessageNotificationBadge = lazy(() =>
-  import(
-    "@web-speed-hackathon-2026/client/src/components/direct_message/DirectMessageNotificationBadge"
-  ).then((m) => ({ default: m.DirectMessageNotificationBadge })),
+  import("@web-speed-hackathon-2026/client/src/components/direct_message/DirectMessageNotificationBadge").then(
+    (m) => ({ default: m.DirectMessageNotificationBadge }),
+  ),
 );
 
 interface Props {
@@ -35,7 +35,11 @@ export const Navigation = ({ activeUser, authModalId, newPostModalId, onLogout }
           />
           {activeUser !== null ? (
             <NavigationItem
-              badge={<Suspense><DirectMessageNotificationBadge /></Suspense>}
+              badge={
+                <Suspense>
+                  <DirectMessageNotificationBadge />
+                </Suspense>
+              }
               href="/dm"
               icon={<FontAwesomeIcon iconType="envelope" styleType="solid" />}
               text="DM"
