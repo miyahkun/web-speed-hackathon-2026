@@ -163,6 +163,20 @@ staticRouter.get("/posts/:postId", async (req, res, next) => {
   return next();
 });
 
+// 利用規約ページ: カスタムフォントをpreload
+staticRouter.get("/terms", async (_req, res, next) => {
+  try {
+    const html = await getIndexHtml();
+    const preloadTag = `<link rel="preload" as="font" href="/fonts/ReiNoAreMincho-Heavy.subset.woff2" type="font/woff2" crossorigin>`;
+    const injected = html.replace("</head>", `${preloadTag}</head>`);
+    res.setHeader("Content-Type", "text/html");
+    res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+    return res.send(injected);
+  } catch {
+    return next();
+  }
+});
+
 // SPA 対応のため、ファイルが存在しないときに index.html を返す
 staticRouter.use(history() as unknown as import("express").RequestHandler);
 
