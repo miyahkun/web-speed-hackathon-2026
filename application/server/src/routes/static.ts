@@ -104,7 +104,7 @@ try {
 staticRouter.get("/", async (req, res, next) => {
   try {
     const [posts, ssrUser] = await Promise.all([
-      Post.findAll({ limit: 30 }),
+      Post.findAll({ limit: 5 }),
       resolveSessionUser(req),
     ]);
     const postsJSON = posts.map((p) => p.toJSON());
