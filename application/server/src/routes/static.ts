@@ -76,10 +76,11 @@ async function getIndexHtml(): Promise<string> {
 export const staticRouter = Router();
 
 // SSR バンドル (ビルド時に生成)
-let ssrModule: { renderHome: (posts: unknown[]) => string } | null = null;
+type SsrModule = { renderHome: (posts: unknown[]) => string };
+let ssrModule: SsrModule | null = null;
 try {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  ssrModule = require(path.resolve(CLIENT_DIST_PATH, "ssr.cjs")) as typeof ssrModule;
+  ssrModule = require(path.resolve(CLIENT_DIST_PATH, "ssr.cjs")) as SsrModule;
 } catch {
   // SSR バンドルが無い場合はフォールバック
 }

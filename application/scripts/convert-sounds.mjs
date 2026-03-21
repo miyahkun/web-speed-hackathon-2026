@@ -14,10 +14,13 @@ for (const file of files) {
   const outputPath = path.join(soundsDir, file.replace(/\.mp3$/, ".opus"));
 
   execFileSync("ffmpeg", [
-    "-i", inputPath,
+    "-i",
+    inputPath,
     "-vn",
-    "-c:a", "libopus",
-    "-b:a", "96k",
+    "-c:a",
+    "libopus",
+    "-b:a",
+    "96k",
     "-y",
     outputPath,
   ]);

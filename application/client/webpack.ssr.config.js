@@ -1,6 +1,5 @@
 const path = require("path");
 const webpack = require("webpack");
-const nodeExternals = require("webpack-node-externals");
 const { LimitChunkCountPlugin } = webpack.optimize;
 
 const SRC_PATH = path.resolve(__dirname, "./src");
@@ -55,9 +54,7 @@ const config = {
       url: false,
     },
   },
-  plugins: [
-    new LimitChunkCountPlugin({ maxChunks: 1 }),
-  ],
+  plugins: [new LimitChunkCountPlugin({ maxChunks: 1 })],
   optimization: {
     minimize: false,
   },

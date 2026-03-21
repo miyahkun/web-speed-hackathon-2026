@@ -1,7 +1,7 @@
 import { renderToString } from "react-dom/server";
+import { HelmetProvider } from "react-helmet";
 import { Provider } from "react-redux";
 import { StaticRouter } from "react-router";
-import { HelmetProvider } from "react-helmet";
 
 import { AppPage } from "@web-speed-hackathon-2026/client/src/components/application/AppPage";
 import { TimelinePage } from "@web-speed-hackathon-2026/client/src/components/timeline/TimelinePage";

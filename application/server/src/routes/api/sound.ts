@@ -83,17 +83,7 @@ soundRouter.put("/sounds/:soundId/data", async (req, res) => {
 
   await fs.writeFile(origPath, req.body);
 
-  execFileAsync("ffmpeg", [
-    "-i",
-    origPath,
-    "-vn",
-    "-c:a",
-    "libopus",
-    "-b:a",
-    "96k",
-    "-y",
-    opusPath,
-  ])
+  execFileAsync("ffmpeg", ["-i", origPath, "-vn", "-c:a", "libopus", "-b:a", "96k", "-y", opusPath])
     .then(() => {
       fs.unlink(origPath).catch(() => {});
     })
