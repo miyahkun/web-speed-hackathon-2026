@@ -122,7 +122,7 @@ staticRouter.get("/posts/:postId", async (req, res, next) => {
 });
 
 // SPA 対応のため、ファイルが存在しないときに index.html を返す
-staticRouter.use(history());
+staticRouter.use(history() as unknown as import("express").RequestHandler);
 
 // MP3 が未生成の場合、元ファイル（wav, ogg, flac 等）にフォールバックする
 staticRouter.use("/sounds", async (req, res, next) => {

@@ -13,7 +13,7 @@ export async function createTranslator(params: Params): Promise<Translator> {
     throw new Error("WebGPU is not supported in this browser");
   }
 
-  const [{ CreateMLCEngine }, { stripIndents }, JSONRepairJS, langsModule, { default: invariant }] =
+  const [{ CreateMLCEngine }, { stripIndents }, JSONRepairJS, langsModule, tinyInvariant] =
     await Promise.all([
       import("@mlc-ai/web-llm"),
       import("common-tags"),
@@ -22,6 +22,7 @@ export async function createTranslator(params: Params): Promise<Translator> {
       import("tiny-invariant"),
     ]);
 
+  const invariant: typeof tinyInvariant.default = tinyInvariant.default;
   const langs = langsModule.default;
 
   const sourceLang = langs.where("1", params.sourceLanguage);
@@ -55,13 +56,13 @@ export async function createTranslator(params: Params): Promise<Translator> {
       const content = reply.choices[0]!.message.content;
       invariant(content, "No content in the reply from the translation engine.");
 
-      const parsed = JSONRepairJS.loads(content);
+      const parsed = JSONRepairJS.loads(content) as Record<string, unknown> | null;
       invariant(
         parsed != null && "result" in parsed,
         "The translation result is missing in the reply.",
       );
 
-      return String(parsed.result);
+      return String(parsed["result"]);
     },
     [Symbol.dispose]: () => {
       engine.unload();
