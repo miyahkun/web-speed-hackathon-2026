@@ -36,24 +36,22 @@ soundRouter.post("/sounds", async (req, res) => {
     const type = await fileTypeFromBuffer(req.body);
     const origExt = type?.ext ?? "bin";
     const origPath = path.resolve(soundsDir, `${soundId}.${origExt}`);
-    const mp3Path = path.resolve(soundsDir, `${soundId}.mp3`);
+    const opusPath = path.resolve(soundsDir, `${soundId}.opus`);
 
     // 元ファイルをそのまま保存（即座に再生可能にする）
     await fs.writeFile(origPath, req.body);
 
-    // バックグラウンドで MP3 に変換し、完了したら元ファイルを削除
+    // バックグラウンドで Opus に変換し、完了したら元ファイルを削除
     execFileAsync("ffmpeg", [
       "-i",
       origPath,
       "-vn",
       "-c:a",
-      "libmp3lame",
+      "libopus",
       "-b:a",
-      "128k",
-      "-compression_level",
-      "0",
+      "96k",
       "-y",
-      mp3Path,
+      opusPath,
     ])
       .then(() => {
         fs.unlink(origPath).catch(() => {});
@@ -81,7 +79,7 @@ soundRouter.put("/sounds/:soundId/data", async (req, res) => {
   const type = await fileTypeFromBuffer(req.body);
   const origExt = type?.ext ?? "bin";
   const origPath = path.resolve(soundsDir, `${soundId}.${origExt}`);
-  const mp3Path = path.resolve(soundsDir, `${soundId}.mp3`);
+  const opusPath = path.resolve(soundsDir, `${soundId}.opus`);
 
   await fs.writeFile(origPath, req.body);
 
@@ -90,13 +88,11 @@ soundRouter.put("/sounds/:soundId/data", async (req, res) => {
     origPath,
     "-vn",
     "-c:a",
-    "libmp3lame",
+    "libopus",
     "-b:a",
-    "128k",
-    "-compression_level",
-    "0",
+    "96k",
     "-y",
-    mp3Path,
+    opusPath,
   ])
     .then(() => {
       fs.unlink(origPath).catch(() => {});

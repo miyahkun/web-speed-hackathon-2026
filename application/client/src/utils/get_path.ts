@@ -9,7 +9,7 @@ export function getMoviePath(movieId: string): string {
 }
 
 export function getSoundPath(soundId: string): string {
-  return `/sounds/${soundId}.mp3?${CACHE_BUSTER}`;
+  return `/sounds/${soundId}.opus?${CACHE_BUSTER}`;
 }
 
 export function getProfileImagePath(profileImageId: string): string {

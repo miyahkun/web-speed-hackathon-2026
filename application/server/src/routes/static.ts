@@ -25,6 +25,7 @@ const LONG_CACHE_EXTS = new Set([
   ".mp4",
   ".webm",
   ".mp3",
+  ".opus",
   ".wav",
   ".ogg",
   ".woff",
@@ -182,21 +183,21 @@ staticRouter.get("/terms", async (_req, res, next) => {
 // SPA 対応のため、ファイルが存在しないときに index.html を返す
 staticRouter.use(history() as unknown as import("express").RequestHandler);
 
-// MP3 が未生成の場合、元ファイル（wav, ogg, flac 等）にフォールバックする
+// Opus が未生成の場合、元ファイル（wav, ogg, flac 等）にフォールバックする
 staticRouter.use("/sounds", async (req, res, next) => {
-  if (!req.path.endsWith(".mp3")) return next();
+  if (!req.path.endsWith(".opus")) return next();
 
-  const mp3Path = path.resolve(UPLOAD_PATH, "sounds", path.basename(req.path));
+  const opusPath = path.resolve(UPLOAD_PATH, "sounds", path.basename(req.path));
   try {
-    await fs.access(mp3Path);
-    return next(); // MP3 が存在するのでそのまま配信
+    await fs.access(opusPath);
+    return next(); // Opus が存在するのでそのまま配信
   } catch {
-    // MP3 がなければ同じ soundId で別拡張子のファイルを探す
-    const soundId = path.basename(req.path, ".mp3");
+    // Opus がなければ同じ soundId で別拡張子のファイルを探す
+    const soundId = path.basename(req.path, ".opus");
     const soundsDir = path.resolve(UPLOAD_PATH, "sounds");
     try {
       const files = await fs.readdir(soundsDir);
-      const fallback = files.find((f) => f.startsWith(soundId + ".") && !f.endsWith(".mp3"));
+      const fallback = files.find((f) => f.startsWith(soundId + ".") && !f.endsWith(".opus"));
       if (fallback) {
         const fallbackPath = path.resolve(soundsDir, fallback);
         res.setHeader("Cache-Control", "no-cache");
